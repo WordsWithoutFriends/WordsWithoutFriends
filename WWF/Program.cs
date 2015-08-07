@@ -9,7 +9,7 @@ namespace WWF
     class Program
     {
         private const int BoardSize = 15;
-        
+
         static public void Main(string[] args)
         {
             var grid = new Board.Fill(BoardSize);
@@ -59,7 +59,7 @@ namespace WWF
                     {
                         for (var j = rowLetters.Count; j < BoardSize; j++)
                         {
-                            rowLetters.Add(' ');
+                            rowLetters.Add(Constants.Blank);
                         }
                     }
 
@@ -180,16 +180,16 @@ namespace WWF
 
         static bool CheckSquare(Grid grid, int top, int bottom, int column, ref int contactRow) //Check for tiles which disqualify square (1,2), otherwise for a connection which qualifies it (3)
         {
-            if ((grid.GetSquare(Math.Max(top - 1, 0), column).Letter != ' ' && top > 0)) // 1)Check square above for letter
+            if ((!grid.GetSquare(Math.Max(top - 1, 0), column).IsBlank && top > 0)) // 1)Check square above for letter
                 { return false;}
 
             for (var row = top; row < BoardSize; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
             {
-                if (grid.GetSquare(row, column).Letter == ' ')
+                if (grid.GetSquare(row, column).IsBlank)
                 {
                     break;
                 }
-                if (grid.GetSquare(row, column).Letter != ' ' && row == BoardSize - 1)
+                if (!grid.GetSquare(row, column).IsBlank && row == BoardSize - 1)
                 {
                     return false;
                 }
@@ -204,7 +204,7 @@ namespace WWF
                 }
             }
 
-            if (bottom != BoardSize - 1 && grid.GetSquare(bottom + 1, column).Letter != ' ') // 3)Check square below bottom-most reach 
+            if (bottom != BoardSize - 1 && !grid.GetSquare(bottom + 1, column).IsBlank) // 3)Check square below bottom-most reach 
             {
                 contactRow = bottom - top + 2;
                 return true;
@@ -277,14 +277,14 @@ namespace WWF
                 mould.Add(grid.GetSquare(r, column).Letter);
             }
 
-            var blanks = mould.Count(i => i == ' ');
+            var blanks = mould.Count(i => i == Blank);
 
             if (blanks > letterCount)
             {
                 for (var r = mould.Count - 1; r > -1; r--)
                 {
                     if (blanks == letterCount) { break; }
-                    if (mould[r] == ' ')
+                    if (mould[r] == Blank)
                     {
                         mould.RemoveAt(r);
                         blanks--;
@@ -302,7 +302,7 @@ namespace WWF
         {
             for (var j = 0; j < word.Count; j++)
             {
-                if (mould[j] != ' ' && mould[j] != word[j])
+                if (mould[j] != Constants.Blank && mould[j] != word[j])
                 {
                     return false;
                 }
@@ -328,10 +328,10 @@ namespace WWF
                 var str = string.Concat(tempLetters);
                 if (!str.Contains(word[letter])) //Check if letter exists in rack tiles
                 {
-                    if (str.Contains(' ')) //If not, check if blank tile exists to represent letter
+                    if (str.Contains(Constants.Blank)) //If not, check if blank tile exists to represent letter
                     {
                         count --;
-                        tempLetters.Remove(' ');
+                        tempLetters.Remove(Constants.Blank);
                         blankLetters.Add(word[letter]); //blankLetters is a record of letters represented by blank tile/s
                         continue;
                     }
@@ -352,7 +352,7 @@ namespace WWF
             
             if (mould.Count > word.Count) //Check for subsequent letters after word, eg. CAT not acceptable in mould _A_M
             {
-                if (mould[word.Count] != ' ')
+                if (mould[word.Count] != Constants.Blank)
                 {
                     connection = false;
                 }
@@ -373,12 +373,12 @@ namespace WWF
                 var perpWord = word[r].ToString(CultureInfo.InvariantCulture);
                 for (var c = column - 1; c > -1; c--) //Construct perp word with letters to left
                 {
-                    if (grid.GetSquare(r + row, c).Letter == ' ') { break; }
+                    if (grid.GetSquare(r + row, c).IsBlank) { break; }
                     perpWord = grid.GetSquare(r + row, c).Letter + perpWord;
                 }
                 for (var c = column + 1; c < BoardSize; c++) //Add letters to right
                 {
-                    if (grid.GetSquare(r + row, c).Letter == ' ') { break; }
+                    if (grid.GetSquare(r + row, c).IsBlank) { break; }
                     perpWord += grid.GetSquare(r + row, c).Letter.ToString(CultureInfo.InvariantCulture);
                 }
 
@@ -437,18 +437,18 @@ namespace WWF
 
                         for (var c = 0; c < wd.Count; c++) //Word without mould letters, eg. ALABAS###S
                         {
-                            wd[c] = word[c] == mould[c] ? ' ' : wd[c];
+                            wd[c] = word[c] == mould[c] ? Constants.Blank : wd[c];
                         }
 
                         var lts = new List<char>(wrd);
-                        lts[l] = ' '; //Replace tile instance with ' '
+                        lts[l] = Constants.Blank; //Replace tile instance with ' '
                         var indices = new List<int>();
 
                         for (var ind = 0; ind < lts.Count; ind++) //Find indices of duplicate tiles to place back in, eg. [0,2,4] for As in ALABASTERS
                         {
                             var index = wd.FindIndex(x => x == blanks[b]);
                             indices.Add(index);
-                            wd[index] = ' ';
+                            wd[index] = Constants.Blank;
                         }
 
                         for (var i = 0; i < lts.Count; i++) //Reinsert current duplicate scheme, eg. *LABAS###S, AL*BAS###S, ALAB*S###S
@@ -458,7 +458,7 @@ namespace WWF
 
                         for (var i = 0; i < word.Count; i++) //Reinsert mould letters, eg. *LABASTERS, AL*BASTERS, ALAB*STERS. End up with three variations of ALABASTERS with ' ' at different occurences of 'A'
                         {
-                            if (mould[i] != ' ')
+                            if (mould[i] != Constants.Blank)
                             {
                                 wd[i] = mould[i];
                             }
@@ -473,7 +473,7 @@ namespace WWF
             
             for (var w = words.Count - 1; w > -1; w--) //Remove duplicate words
             {
-                if (words[w].Count(x => x == ' ') < blanks.Count) 
+                if (words[w].Count(x => x == Constants.Blank) < blanks.Count) 
                 {
                     words.RemoveAt(w);
                     continue;
@@ -627,7 +627,7 @@ namespace WWF
             {
                 switch (i)
                 {
-                    case ' ':
+                    case Constants.Blank:
                         letterScores.Add(0); break;
                     case 'a': case 'e': case 'i': case 'o': case 'r': case 's': case 't':
                         letterScores.Add(1); break;
@@ -657,14 +657,14 @@ namespace WWF
 
             for (var r = 0; r < word.Letters.Count; r++)
             {
-                var letterMultiplier = grid.GetSquare(r + word.Row, word.Column).Letter == ' ' ? grid.GetSquare(r + word.Row, word.Column).LetterBonus : 1; //Determine if square letter muliplier is applicable
-                var wordMultiplier = grid.GetSquare(r + word.Row, word.Column).Letter == ' ' ? grid.GetSquare(r + word.Row, word.Column).WordBonus : 1; //Determine if square word multiplier is applicable
+                var letterMultiplier = grid.GetSquare(r + word.Row, word.Column).IsBlank ? grid.GetSquare(r + word.Row, word.Column).LetterBonus : 1; //Determine if square letter muliplier is applicable
+                var wordMultiplier = grid.GetSquare(r + word.Row, word.Column).IsBlank ? grid.GetSquare(r + word.Row, word.Column).WordBonus : 1; //Determine if square word multiplier is applicable
 
                 totalWordMultiplier *= wordMultiplier; //Add square word multiplier to total word multiplier
 
                 baseScore += word.Scores[r] * letterMultiplier; //Add current letter score to base word score
 
-                if (grid.GetSquare(r + word.Row, word.Column).Letter != ' ') { continue; } //Existing letter - perpendicular word doesn't score
+                if (!grid.GetSquare(r + word.Row, word.Column).IsBlank) { continue; } //Existing letter - perpendicular word doesn't score
 
                 letterCount++;
 
@@ -673,13 +673,13 @@ namespace WWF
                 var count = 0; //Count of perpendicular tiles. Needed due to potential blank tiles with 0 score.
                 for (var c = word.Column - 1; c > -1; c--) //Add letter scores for perp word to left
                 {
-                    if (grid.GetSquare(r + word.Row, c).Letter == ' ') { break; }
+                    if (grid.GetSquare(r + word.Row, c).IsBlank) { break; }
                     crossWord += grid.GetSquare(r + word.Row, c).Score;
                     count++;
                 }
                 for (var c = word.Column + 1; c < BoardSize; c++) //Add letter scores for perp word to right
                 {
-                    if (grid.GetSquare(r + word.Row, c).Letter == ' ') { break; }
+                    if (grid.GetSquare(r + word.Row, c).IsBlank) { break; }
                     crossWord += grid.GetSquare(r + word.Row, c).Score;
                     count++;
                 }

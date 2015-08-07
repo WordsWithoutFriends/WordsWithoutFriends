@@ -13,5 +13,7 @@ namespace WWF
         public int LetterBonus { get; set; }
 
         public int WordBonus { get; set; }
+
+        public bool IsBlank { get { return Letter == Constants.Blank; } }
     }
 }
