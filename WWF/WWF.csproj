@@ -61,6 +61,7 @@
     <Compile Include="Dictionary.cs" />
     <Compile Include="Direction.cs" />
     <Compile Include="Grid.cs" />
+    <Compile Include="LetterScorer.cs" />
     <Compile Include="Mould.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

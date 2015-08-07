@@ -434,14 +434,7 @@ namespace WWF
 
         public static List<int> LetterValues(List<char> word)
         {
-            var letterScores = new List<int>();
-
-            foreach (var i in word)
-            {
-                letterScores.Add(LetterScorer.GetScore(i));
-            }
-
-            return letterScores;
+            return word.Select(LetterScorer.GetScore).ToList();
         }
 
         static Word WordScorer(Word word, Grid grid)
