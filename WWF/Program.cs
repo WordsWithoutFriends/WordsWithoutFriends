@@ -438,26 +438,9 @@ namespace WWF
 
             foreach (var i in word)
             {
-                switch (i)
-                {
-                    case Constants.Blank:
-                        letterScores.Add(0); break;
-                    case 'a': case 'e': case 'i': case 'o': case 'r': case 's': case 't':
-                        letterScores.Add(1); break;
-                    case 'd': case 'l': case 'n': case 'u':
-                        letterScores.Add(2); break;
-                    case 'g': case 'h': case 'y':
-                        letterScores.Add(3); break;
-                    case 'b': case 'c': case 'f': case 'm': case 'p': case 'w':
-                        letterScores.Add(4); break;
-                    case 'k': case 'v':
-                        letterScores.Add(5); break;
-                    case 'x':
-                        letterScores.Add(8); break;
-                    case 'j': case 'q': case 'z':
-                        letterScores.Add(10); break;
-                }
+                letterScores.Add(LetterScorer.GetScore(i));
             }
+
             return letterScores;
         }
 
