@@ -6,7 +6,7 @@ namespace WWF
 {
     class Board
     {
-        public List<List<Square>> BoardEmpty = new List<List<Square>>{
+        public Grid BoardEmpty = new Grid(new List<List<Square>> {
             new List<Square>{new Square(), new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square()},
             new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
             new List<Square>{new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square()},
@@ -22,11 +22,11 @@ namespace WWF
             new List<Square>{new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square()},
             new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
             new List<Square>{new Square(), new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square()},
-        };
+        });
 
         public class Fill : Board
         {
-            public List<List<Square>> BoardFilled = new List<List<Square>>();
+            public Grid BoardFilled;
 
             public Fill(int boardSize)
             {
@@ -58,12 +58,12 @@ namespace WWF
                     var chrs = letters[i].ToCharArray().ToList();
                     for (var j = 0; j < boardSize; j++)
                     {
-                        BoardFilled[i][j].Row = i;
-                        BoardFilled[i][j].Column = j;
-                        BoardFilled[i][j].Letter = chrs[j];
-                        BoardFilled[i][j].Score = Program.LetterValues(BoardFilled[i][j].Letter.ToString(CultureInfo.InvariantCulture).ToCharArray().ToList())[0]; //TODO: !!
-                        BoardFilled[i][j].LetterBonus = BoardFilled[i][j].LetterBonus == 0 ? 1 : BoardFilled[i][j].LetterBonus;
-                        BoardFilled[i][j].WordBonus = BoardFilled[i][j].WordBonus == 0 ? 1 : BoardFilled[i][j].WordBonus;
+                        BoardFilled.GetSquare(i, j).Row = i;
+                        BoardFilled.GetSquare(i, j).Column = j;
+                        BoardFilled.GetSquare(i, j).Letter = chrs[j];
+                        BoardFilled.GetSquare(i, j).Score = Program.LetterValues(BoardFilled.GetSquare(i, j).Letter.ToString(CultureInfo.InvariantCulture).ToCharArray().ToList())[0]; //TODO: !!
+                        BoardFilled.GetSquare(i, j).LetterBonus = BoardFilled.GetSquare(i, j).LetterBonus == 0 ? 1 : BoardFilled.GetSquare(i, j).LetterBonus;
+                        BoardFilled.GetSquare(i, j).WordBonus = BoardFilled.GetSquare(i, j).WordBonus == 0 ? 1 : BoardFilled.GetSquare(i, j).WordBonus;
                     }
                 }
             }

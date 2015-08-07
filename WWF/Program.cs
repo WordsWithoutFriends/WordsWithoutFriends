@@ -26,7 +26,7 @@ namespace WWF
 
             words.AddRange(SquareRunThrough(board, letters, Direction.Down)); //Down words
 
-            board = Rotate(board);
+            board = board.RotateCounterClockwise();
 
             words.AddRange(SquareRunThrough(board, letters, Direction.Across)); //Across words
             
@@ -43,7 +43,7 @@ namespace WWF
             Console.ReadKey();
         }
 
-        static List<List<Square>> GetGrid(List<List<Square>> board )
+        static Grid GetGrid(Grid board)
         {
             var letterFrequencyTotal = new List<int>(); //Cumulative letter frequency for board. Max # of each tile allowed.
             for (var row = 0; row < BoardSize; row++)
@@ -71,7 +71,7 @@ namespace WWF
 
                     for (var column = 0; column < BoardSize; column++) //Add row letters to board
                     {
-                        board[row][column].Letter = rowLetters[column];
+                        board.GetSquare(row, column).Letter = rowLetters[column];
                     }
 
                     break;
@@ -81,7 +81,7 @@ namespace WWF
             return board;
         }
 
-        static void WriteBoard(List<List<Square>> board)
+        static void WriteBoard(Grid board)
         {
             Console.WriteLine(" 123456789012345");
             for (var i = 0; i < BoardSize; i++)
@@ -89,9 +89,9 @@ namespace WWF
                 Console.Write("|");
                 for (var j = 0; j < BoardSize - 1; j++)
                 {
-                    Console.Write((board[i][j]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper());
+                    Console.Write((board.GetSquare(i, j)).Letter.ToString(CultureInfo.InvariantCulture).ToUpper());
                 }
-                Console.WriteLine((board[i][BoardSize - 1]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper() + "| {0}", i + 1);
+                Console.WriteLine((board.GetSquare(i, BoardSize - 1)).Letter.ToString(CultureInfo.InvariantCulture).ToUpper() + "| {0}", i + 1);
             }
         }
 
@@ -131,7 +131,7 @@ namespace WWF
             return (letters);
         }
         
-        static List<Word> SquareRunThrough(List<List<Square>> board, List<char> letters, Direction direction)
+        static List<Word> SquareRunThrough(Grid board, List<char> letters, Direction direction)
         {
             var words = new List<Word>();
 
@@ -159,7 +159,7 @@ namespace WWF
             return wordsOrdered.ToList();
         }
 
-        static List<int> Limits(List<List<Square>> grid )
+        static List<int> Limits(Grid grid)
         {
             var lts = new List<int> { BoardSize - 1, 0, BoardSize - 1, 0 }; //Left-Column/Right-Column/Upper-Row/Lower-Row bounds
 
@@ -167,7 +167,7 @@ namespace WWF
             {
                 for (var c = 0; c < BoardSize; c++)
                 {
-                    var chr = Regex.IsMatch(grid[r][c].Letter.ToString(CultureInfo.InvariantCulture), @"[a-z]");
+                    var chr = Regex.IsMatch(grid.GetSquare(r,c).Letter.ToString(CultureInfo.InvariantCulture), @"[a-z]");
                     if (chr && c <= lts[0]){lts[0] = Math.Max(c - 1, 0);}
                     if (chr && c >= lts[1]){lts[1] = Math.Min(c + 1, BoardSize - 1);}
                     if (chr && r <= lts[2]){lts[2] = Math.Max(r - 1, 0);}
@@ -178,18 +178,18 @@ namespace WWF
             return lts;
         }
 
-        static bool CheckSquare(List<List<Square>> grid, int top, int bottom, int column, ref int contactRow) //Check for tiles which disqualify square (1,2), otherwise for a connection which qualifies it (3)
+        static bool CheckSquare(Grid grid, int top, int bottom, int column, ref int contactRow) //Check for tiles which disqualify square (1,2), otherwise for a connection which qualifies it (3)
         {
-            if ((grid[Math.Max(top - 1, 0)][column].Letter != ' ' && top > 0)) // 1)Check square above for letter
+            if ((grid.GetSquare(Math.Max(top - 1, 0), column).Letter != ' ' && top > 0)) // 1)Check square above for letter
                 { return false;}
 
             for (var row = top; row < BoardSize; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
             {
-                if (grid[row][column].Letter == ' ')
+                if (grid.GetSquare(row, column).Letter == ' ')
                 {
                     break;
                 }
-                if (grid[row][column].Letter != ' ' && row == BoardSize - 1)
+                if (grid.GetSquare(row, column).Letter != ' ' && row == BoardSize - 1)
                 {
                     return false;
                 }
@@ -197,14 +197,14 @@ namespace WWF
 
             for (var row = top; row < bottom + 1; row++) // 3)Check letters-by-3 box (squares in column and adjacent columns on either side)
             {
-                if (grid[row][Math.Max(column - 1, 0)].Letter.ToString(CultureInfo.InvariantCulture) + grid[row][column].Letter + grid[row][Math.Min(BoardSize - 1, column + 1)].Letter != "   ")
+                if (grid.GetSquare(row, Math.Max(column - 1, 0)).Letter.ToString(CultureInfo.InvariantCulture) + grid.GetSquare(row, column).Letter + grid.GetSquare(row, Math.Min(BoardSize - 1, column + 1)).Letter != "   ")
                 {
                     contactRow = row - top + 1;
                     return true;
                 }
             }
 
-            if (bottom != BoardSize - 1 && grid[bottom + 1][column].Letter != ' ') // 3)Check square below bottom-most reach 
+            if (bottom != BoardSize - 1 && grid.GetSquare(bottom + 1, column).Letter != ' ') // 3)Check square below bottom-most reach 
             {
                 contactRow = bottom - top + 2;
                 return true;
@@ -213,22 +213,9 @@ namespace WWF
             return false;
         }
 
-        static List<List<Square>> Rotate(List<List<Square>> grid)
-        {
-            var rotatedGrid = new Board().BoardEmpty;
+        
 
-            for (var r = 0; r < BoardSize; r++)
-            {
-                for (var c = 0; c < BoardSize; c++)
-                {
-                    rotatedGrid[r][c] = grid[BoardSize - 1 - c][r];
-                }
-            }
-
-            return rotatedGrid;
-        }
-
-        static List<Word> WordSolver(List<List<Square>> grid, List<char> letters, int row, int column, int contactRow, Direction direction)
+        static List<Word> WordSolver(Grid grid, List<char> letters, int row, int column, int contactRow, Direction direction)
         {
             var mould = Mould(grid, letters.Count, row, column); //Find 'mould' (line of empty and filled squares down or across) for current square, eg. "  C D"
 
@@ -281,13 +268,13 @@ namespace WWF
             return words;
         }
 
-        static List<char> Mould(List<List<Square>> grid, int letterCount, int row, int column )
+        static List<char> Mould(Grid grid, int letterCount, int row, int column )
         {
             var mould = new List<char>();
 
             for (var r = row; r < BoardSize; r++)
             {
-                mould.Add(grid[r][column].Letter);
+                mould.Add(grid.GetSquare(r, column).Letter);
             }
 
             var blanks = mould.Count(i => i == ' ');
@@ -379,20 +366,20 @@ namespace WWF
             return false;
         }
         
-        static bool PerpendicularWords(List<List<Square>> grid, List<char> word, int row, int column, Direction direction) //Check any perpendicular words are legal
+        static bool PerpendicularWords(Grid grid, List<char> word, int row, int column, Direction direction) //Check any perpendicular words are legal
         {
             for (var r = 0; r < word.Count; r++) //Check perp word at each letter
             {
                 var perpWord = word[r].ToString(CultureInfo.InvariantCulture);
                 for (var c = column - 1; c > -1; c--) //Construct perp word with letters to left
                 {
-                    if (grid[r + row][c].Letter == ' ') { break; }
-                    perpWord = grid[r + row][c].Letter + perpWord;
+                    if (grid.GetSquare(r + row, c).Letter == ' ') { break; }
+                    perpWord = grid.GetSquare(r + row, c).Letter + perpWord;
                 }
                 for (var c = column + 1; c < BoardSize; c++) //Add letters to right
                 {
-                    if (grid[r + row][c].Letter == ' ') { break; }
-                    perpWord += grid[r + row][c].Letter.ToString(CultureInfo.InvariantCulture);
+                    if (grid.GetSquare(r + row, c).Letter == ' ') { break; }
+                    perpWord += grid.GetSquare(r + row, c).Letter.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (perpWord.Length == 1) { continue; } //I.E. no adjacent letters
@@ -661,7 +648,7 @@ namespace WWF
             return letterScores;
         }
 
-        static Word WordScorer(Word word, List<List<Square>> grid)
+        static Word WordScorer(Word word, Grid grid)
         {
             var totalScore = 0;
             var totalWordMultiplier = 1; //Total word multiplier for base word score
@@ -670,14 +657,14 @@ namespace WWF
 
             for (var r = 0; r < word.Letters.Count; r++)
             {
-                var letterMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].LetterBonus : 1; //Determine if square letter muliplier is applicable
-                var wordMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].WordBonus : 1; //Determine if square word multiplier is applicable
+                var letterMultiplier = grid.GetSquare(r + word.Row, word.Column).Letter == ' ' ? grid.GetSquare(r + word.Row, word.Column).LetterBonus : 1; //Determine if square letter muliplier is applicable
+                var wordMultiplier = grid.GetSquare(r + word.Row, word.Column).Letter == ' ' ? grid.GetSquare(r + word.Row, word.Column).WordBonus : 1; //Determine if square word multiplier is applicable
 
                 totalWordMultiplier *= wordMultiplier; //Add square word multiplier to total word multiplier
 
                 baseScore += word.Scores[r] * letterMultiplier; //Add current letter score to base word score
 
-                if (grid[r + word.Row][word.Column].Letter != ' ') { continue; } //Existing letter - perpendicular word doesn't score
+                if (grid.GetSquare(r + word.Row, word.Column).Letter != ' ') { continue; } //Existing letter - perpendicular word doesn't score
 
                 letterCount++;
 
@@ -686,14 +673,14 @@ namespace WWF
                 var count = 0; //Count of perpendicular tiles. Needed due to potential blank tiles with 0 score.
                 for (var c = word.Column - 1; c > -1; c--) //Add letter scores for perp word to left
                 {
-                    if (grid[r + word.Row][c].Letter == ' ') { break; }
-                    crossWord += grid[r + word.Row][c].Score;
+                    if (grid.GetSquare(r + word.Row, c).Letter == ' ') { break; }
+                    crossWord += grid.GetSquare(r + word.Row, c).Score;
                     count++;
                 }
                 for (var c = word.Column + 1; c < BoardSize; c++) //Add letter scores for perp word to right
                 {
-                    if (grid[r + word.Row][c].Letter == ' ') { break; }
-                    crossWord += grid[r + word.Row][c].Score;
+                    if (grid.GetSquare(r + word.Row, c).Letter == ' ') { break; }
+                    crossWord += grid.GetSquare(r + word.Row, c).Score;
                     count++;
                 }
                 if (count == 0) { continue; } //No perpendicular word  
