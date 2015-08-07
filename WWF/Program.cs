@@ -8,9 +8,11 @@ namespace WWF
 {
     class Program
     {
+        private const int BoardSize = 15;
+        
         static public void Main(string[] args)
         {
-            var grid = new Board.Fill();
+            var grid = new Board.Fill(BoardSize);
             var board = grid.BoardFilled;
             //board = GetGrid(board); //For board letter input by user
 
@@ -44,7 +46,7 @@ namespace WWF
         static List<List<Square>> GetGrid(List<List<Square>> board )
         {
             var letterFrequencyTotal = new List<int>(); //Cumulative letter frequency for board. Max # of each tile allowed.
-            for (var row = 0; row < 15; row++)
+            for (var row = 0; row < BoardSize; row++)
             {
                 for (; ; )
                 {
@@ -53,21 +55,21 @@ namespace WWF
                     Console.Write("Enter Row {0} letters: ", row + 1);
                     var rowLetters = (Console.ReadLine().ToLower().ToList());
 
-                    if (rowLetters.Count < 15) //Fill rest of row with blanks
+                    if (rowLetters.Count < BoardSize) //Fill rest of row with blanks
                     {
-                        for (var j = rowLetters.Count; j < 15; j++)
+                        for (var j = rowLetters.Count; j < BoardSize; j++)
                         {
                             rowLetters.Add(' ');
                         }
                     }
 
-                    letterFrequencyRow = LetterFreq(rowLetters, letterFrequencyRow, 15); //Get letter frequencies of current row
+                    letterFrequencyRow = LetterFreq(rowLetters, letterFrequencyRow, BoardSize); //Get letter frequencies of current row
 
-                    if (!LettersCheck(rowLetters, letterFrequencyRow, 15)) { continue; } //Check validity of entered characters
+                    if (!LettersCheck(rowLetters, letterFrequencyRow, BoardSize)) { continue; } //Check validity of entered characters
 
                     letterFrequencyTotal = letterFrequencyRow;
 
-                    for (var column = 0; column < 15; column++) //Add row letters to board
+                    for (var column = 0; column < BoardSize; column++) //Add row letters to board
                     {
                         board[row][column].Letter = rowLetters[column];
                     }
@@ -82,14 +84,14 @@ namespace WWF
         static void WriteBoard(List<List<Square>> board)
         {
             Console.WriteLine(" 123456789012345");
-            for (var i = 0; i < 15; i++)
+            for (var i = 0; i < BoardSize; i++)
             {
                 Console.Write("|");
-                for (var j = 0; j < 14; j++)
+                for (var j = 0; j < BoardSize - 1; j++)
                 {
                     Console.Write((board[i][j]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper());
                 }
-                Console.WriteLine((board[i][14]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper() + "| {0}", i + 1);
+                Console.WriteLine((board[i][BoardSize - 1]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper() + "| {0}", i + 1);
             }
         }
 
@@ -139,9 +141,9 @@ namespace WWF
             {
                 for (var column = limitsLtRtUpLw[0]; column < limitsLtRtUpLw[1] + 1; column++)
                 {
-                    var contactRow = 15;
+                    var contactRow = BoardSize;
 
-                    if (!CheckSquare(board, row, Math.Min(row + letters.Count - 1, 14), column, ref contactRow))
+                    if (!CheckSquare(board, row, Math.Min(row + letters.Count - 1, BoardSize - 1), column, ref contactRow))
                     {
                         continue;
                     }
@@ -159,17 +161,17 @@ namespace WWF
 
         static List<int> Limits(List<List<Square>> grid )
         {
-            var lts = new List<int> { 14, 0, 14, 0 }; //Left-Column/Right-Column/Upper-Row/Lower-Row bounds
-            
-            for (var r = 0; r < 15; r++)
+            var lts = new List<int> { BoardSize - 1, 0, BoardSize - 1, 0 }; //Left-Column/Right-Column/Upper-Row/Lower-Row bounds
+
+            for (var r = 0; r < BoardSize; r++)
             {
-                for (var c = 0; c < 15; c++)
+                for (var c = 0; c < BoardSize; c++)
                 {
                     var chr = Regex.IsMatch(grid[r][c].Letter.ToString(CultureInfo.InvariantCulture), @"[a-z]");
                     if (chr && c <= lts[0]){lts[0] = Math.Max(c - 1, 0);}
-                    if (chr && c >= lts[1]){lts[1] = Math.Min(c + 1, 14);}
+                    if (chr && c >= lts[1]){lts[1] = Math.Min(c + 1, BoardSize - 1);}
                     if (chr && r <= lts[2]){lts[2] = Math.Max(r - 1, 0);}
-                    if (chr && r >= lts[3]){lts[3] = Math.Min(r + 1, 14);}
+                    if (chr && r >= lts[3]){lts[3] = Math.Min(r + 1, BoardSize - 1);}
                 }
             }
             
@@ -180,14 +182,14 @@ namespace WWF
         {
             if ((grid[Math.Max(top - 1, 0)][column].Letter != ' ' && top > 0)) // 1)Check square above for letter
                 { return false;}
-            
-            for (var row = top; row < 15; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
+
+            for (var row = top; row < BoardSize; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
             {
                 if (grid[row][column].Letter == ' ')
                 {
                     break;
                 }
-                if (grid[row][column].Letter != ' ' && row == 14)
+                if (grid[row][column].Letter != ' ' && row == BoardSize - 1)
                 {
                     return false;
                 }
@@ -195,14 +197,14 @@ namespace WWF
 
             for (var row = top; row < bottom + 1; row++) // 3)Check letters-by-3 box (squares in column and adjacent columns on either side)
             {
-                if (grid[row][Math.Max(column - 1, 0)].Letter.ToString(CultureInfo.InvariantCulture) + grid[row][column].Letter + grid[row][Math.Min(14, column + 1)].Letter != "   ")
+                if (grid[row][Math.Max(column - 1, 0)].Letter.ToString(CultureInfo.InvariantCulture) + grid[row][column].Letter + grid[row][Math.Min(BoardSize - 1, column + 1)].Letter != "   ")
                 {
                     contactRow = row - top + 1;
                     return true;
                 }
             }
 
-            if (bottom != 14 && grid[bottom + 1][column].Letter != ' ') // 3)Check square below bottom-most reach 
+            if (bottom != BoardSize - 1 && grid[bottom + 1][column].Letter != ' ') // 3)Check square below bottom-most reach 
             {
                 contactRow = bottom - top + 2;
                 return true;
@@ -215,11 +217,11 @@ namespace WWF
         {
             var rotatedGrid = new Board().BoardEmpty;
 
-            for (var r = 0; r < 15; r++)
+            for (var r = 0; r < BoardSize; r++)
             {
-                for (var c = 0; c < 15; c++)
+                for (var c = 0; c < BoardSize; c++)
                 {
-                    rotatedGrid[r][c] = grid[14 - c][r];
+                    rotatedGrid[r][c] = grid[BoardSize - 1 - c][r];
                 }
             }
 
@@ -271,7 +273,7 @@ namespace WWF
                 if (direction == "Across") //Reset coordinates of across words due to rotation
                 {
                     var temp = words[w].Row;
-                    words[w].Row = 14 - words[w].Column;
+                    words[w].Row = BoardSize - 1 - words[w].Column;
                     words[w].Column = temp;
                 }
             }
@@ -283,7 +285,7 @@ namespace WWF
         {
             var mould = new List<char>();
 
-            for (var r = row; r < 15; r++)
+            for (var r = row; r < BoardSize; r++)
             {
                 mould.Add(grid[r][column].Letter);
             }
@@ -387,7 +389,7 @@ namespace WWF
                     if (grid[r + row][c].Letter == ' ') { break; }
                     perpWord = grid[r + row][c].Letter + perpWord;
                 }
-                for (var c = column + 1; c < 15; c++) //Add letters to right
+                for (var c = column + 1; c < BoardSize; c++) //Add letters to right
                 {
                     if (grid[r + row][c].Letter == ' ') { break; }
                     perpWord += grid[r + row][c].Letter.ToString(CultureInfo.InvariantCulture);
@@ -553,7 +555,7 @@ namespace WWF
                         max = -1; break;
                 }
 
-                if (length == 15)
+                if (length == BoardSize)
                 {
                     switch (letterFrequency[k])
                     {
@@ -596,9 +598,9 @@ namespace WWF
                 {
                     Console.WriteLine("Maximum of 7 tiles allowed!");
                 }
-                else if (length == 15)
+                else if (length == BoardSize)
                 {
-                    Console.WriteLine("Maximum of 15 allowed!");
+                    Console.WriteLine("Maximum of {0} allowed!", BoardSize);
                 }
                 pass = false;
             }
@@ -620,7 +622,7 @@ namespace WWF
                     Console.WriteLine("Maximum of {0} {1} tiles allowed!", letterFrequency[j + 2], Convert.ToChar(letterFrequency[j] - 32));
                     pass = false;
                 }
-                else if (letterFrequency[j] > 32 && (letterFrequency[j + 1] > letterFrequency[j + 2]) && length == 15)
+                else if (letterFrequency[j] > 32 && (letterFrequency[j + 1] > letterFrequency[j + 2]) && length == BoardSize)
                 {
                     Console.WriteLine("Maximum of {0} {1} tiles allowed!", letterFrequency[j + 2], Convert.ToChar(letterFrequency[j] - 32));
                     pass = false;
@@ -688,7 +690,7 @@ namespace WWF
                     crossWord += grid[r + word.Row][c].Score;
                     count++;
                 }
-                for (var c = word.Column + 1; c < 15; c++) //Add letter scores for perp word to right
+                for (var c = word.Column + 1; c < BoardSize; c++) //Add letter scores for perp word to right
                 {
                     if (grid[r + word.Row][c].Letter == ' ') { break; }
                     crossWord += grid[r + word.Row][c].Score;
@@ -731,7 +733,7 @@ namespace WWF
         {
             public List<List<Square>> BoardFilled = new List<List<Square>>();
 
-            public Fill()
+            public Fill(int boardSize)
             {
                 BoardFilled = BoardEmpty;
 
@@ -756,10 +758,10 @@ namespace WWF
                    //012345678901234
                 };
 
-                for (var i = 0; i < 15; i++)
+                for (var i = 0; i < boardSize; i++)
                 {
                     var chrs = letters[i].ToCharArray().ToList();
-                    for (var j = 0; j < 15; j++)
+                    for (var j = 0; j < boardSize; j++)
                     {
                         BoardFilled[i][j].Row = i;
                         BoardFilled[i][j].Column = j;
