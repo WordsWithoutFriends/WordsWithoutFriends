@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
-using System.Data.SqlClient;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace WWF
 {
@@ -16,15 +10,15 @@ namespace WWF
     {
         static public void Main(string[] args)
         {
-            Board.Fill grid = new Board.Fill();
-            List<List<Square>> board = grid.BoardFilled;
+            var grid = new Board.Fill();
+            var board = grid.BoardFilled;
             //board = GetGrid(board); //For board letter input by user
 
             WriteBoard(board);
 
-            List<char> letters = GetLetters();
+            var letters = GetLetters();
 
-            DateTime startTime = DateTime.Now;
+            var startTime = DateTime.Now;
 
             var words = new List<Word>();
 
@@ -34,7 +28,7 @@ namespace WWF
 
             words.AddRange(SquareRunThrough(board, letters, "Across")); //Across words
             
-            DateTime endTime = DateTime.Now;
+            var endTime = DateTime.Now;
 
             var wordsOrdered = from element in words 
                                orderby element.Row, element.Column, element.WordScore descending 
@@ -50,18 +44,18 @@ namespace WWF
         static List<List<Square>> GetGrid(List<List<Square>> board )
         {
             var letterFrequencyTotal = new List<int>(); //Cumulative letter frequency for board. Max # of each tile allowed.
-            for (int row = 0; row < 15; row++)
+            for (var row = 0; row < 15; row++)
             {
                 for (; ; )
                 {
                     var letterFrequencyRow = new List<int>(letterFrequencyTotal);
                     
                     Console.Write("Enter Row {0} letters: ", row + 1);
-                    List<char> rowLetters = (Console.ReadLine().ToLower().ToList());
+                    var rowLetters = (Console.ReadLine().ToLower().ToList());
 
                     if (rowLetters.Count < 15) //Fill rest of row with blanks
                     {
-                        for (int j = rowLetters.Count; j < 15; j++)
+                        for (var j = rowLetters.Count; j < 15; j++)
                         {
                             rowLetters.Add(' ');
                         }
@@ -73,7 +67,7 @@ namespace WWF
 
                     letterFrequencyTotal = letterFrequencyRow;
 
-                    for (int column = 0; column < 15; column++) //Add row letters to board
+                    for (var column = 0; column < 15; column++) //Add row letters to board
                     {
                         board[row][column].Letter = rowLetters[column];
                     }
@@ -88,14 +82,14 @@ namespace WWF
         static void WriteBoard(List<List<Square>> board)
         {
             Console.WriteLine(" 123456789012345");
-            for (int i = 0; i < 15; i++)
+            for (var i = 0; i < 15; i++)
             {
                 Console.Write("|");
-                for (int j = 0; j < 14; j++)
+                for (var j = 0; j < 14; j++)
                 {
-                    Console.Write((board[i][j]).Letter.ToString().ToUpper());
+                    Console.Write((board[i][j]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper());
                 }
-                Console.WriteLine((board[i][14]).Letter.ToString().ToUpper() + "| {0}", i + 1);
+                Console.WriteLine((board[i][14]).Letter.ToString(CultureInfo.InvariantCulture).ToUpper() + "| {0}", i + 1);
             }
         }
 
@@ -139,13 +133,13 @@ namespace WWF
         {
             var words = new List<Word>();
 
-            List<int> limitsLtRtUpLw = Limits(board); //Limits let code ignore checking large sections of board  
+            var limitsLtRtUpLw = Limits(board); //Limits let code ignore checking large sections of board  
             
-            for (int row = 0; row < limitsLtRtUpLw[3]; row++)
+            for (var row = 0; row < limitsLtRtUpLw[3]; row++)
             {
-                for (int column = limitsLtRtUpLw[0]; column < limitsLtRtUpLw[1] + 1; column++)
+                for (var column = limitsLtRtUpLw[0]; column < limitsLtRtUpLw[1] + 1; column++)
                 {
-                    int contactRow = 15;
+                    var contactRow = 15;
 
                     if (!CheckSquare(board, row, Math.Min(row + letters.Count - 1, 14), column, ref contactRow))
                     {
@@ -167,11 +161,11 @@ namespace WWF
         {
             var lts = new List<int> { 14, 0, 14, 0 }; //Left-Column/Right-Column/Upper-Row/Lower-Row bounds
             
-            for (int r = 0; r < 15; r++)
+            for (var r = 0; r < 15; r++)
             {
-                for (int c = 0; c < 15; c++)
+                for (var c = 0; c < 15; c++)
                 {
-                    bool chr = Regex.IsMatch(grid[r][c].Letter.ToString(), @"[a-z]");
+                    var chr = Regex.IsMatch(grid[r][c].Letter.ToString(CultureInfo.InvariantCulture), @"[a-z]");
                     if (chr && c <= lts[0]){lts[0] = Math.Max(c - 1, 0);}
                     if (chr && c >= lts[1]){lts[1] = Math.Min(c + 1, 14);}
                     if (chr && r <= lts[2]){lts[2] = Math.Max(r - 1, 0);}
@@ -187,7 +181,7 @@ namespace WWF
             if ((grid[Math.Max(top - 1, 0)][column].Letter != ' ' && top > 0)) // 1)Check square above for letter
                 { return false;}
             
-            for (int row = top; row < 15; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
+            for (var row = top; row < 15; row++) // 2)Check for continuous column of letters to bottom (Includes bottom row)
             {
                 if (grid[row][column].Letter == ' ')
                 {
@@ -199,9 +193,9 @@ namespace WWF
                 }
             }
 
-            for (int row = top; row < bottom + 1; row++) // 3)Check letters-by-3 box (squares in column and adjacent columns on either side)
+            for (var row = top; row < bottom + 1; row++) // 3)Check letters-by-3 box (squares in column and adjacent columns on either side)
             {
-                if (grid[row][Math.Max(column - 1, 0)].Letter.ToString() + grid[row][column].Letter + grid[row][Math.Min(14, column + 1)].Letter != "   ")
+                if (grid[row][Math.Max(column - 1, 0)].Letter.ToString(CultureInfo.InvariantCulture) + grid[row][column].Letter + grid[row][Math.Min(14, column + 1)].Letter != "   ")
                 {
                     contactRow = row - top + 1;
                     return true;
@@ -219,11 +213,11 @@ namespace WWF
 
         static List<List<Square>> Rotate(List<List<Square>> grid)
         {
-            List<List<Square>> rotatedGrid = new Board().BoardEmpty;
+            var rotatedGrid = new Board().BoardEmpty;
 
-            for (int r = 0; r < 15; r++)
+            for (var r = 0; r < 15; r++)
             {
-                for (int c = 0; c < 15; c++)
+                for (var c = 0; c < 15; c++)
                 {
                     rotatedGrid[r][c] = grid[14 - c][r];
                 }
@@ -234,20 +228,20 @@ namespace WWF
 
         static List<Word> WordSolver(List<List<Square>> grid, List<char> letters, int row, int column, int contactRow, string direction)
         {
-            List<char> mould = Mould(grid, letters.Count, row, column); //Find 'mould' (line of empty and filled squares down or across) for current square, eg. "  C D"
+            var mould = Mould(grid, letters.Count, row, column); //Find 'mould' (line of empty and filled squares down or across) for current square, eg. "  C D"
 
             var words = new List<Word>();
 
-            int lowerIndex = Dictionary.Lengths[Math.Max(contactRow - 2, 0)]; //Check only dictionary words of lengths in applicable range
-            int upperIndex = Dictionary.Lengths[mould.Count - 1] + 1;
+            var lowerIndex = Dictionary.Lengths[Math.Max(contactRow - 2, 0)]; //Check only dictionary words of lengths in applicable range
+            var upperIndex = Dictionary.Lengths[mould.Count - 1] + 1;
 
-            for (int i = lowerIndex; i < upperIndex; i++) 
+            for (var i = lowerIndex; i < upperIndex; i++) 
             {
-                string dictionaryWord = Dictionary.Dict[i];
+                var dictionaryWord = Dictionary.Dict[i];
                 if (dictionaryWord.Length > mould.Count) { continue; }
 
-                List<char> word = dictionaryWord.ToCharArray().ToList();
-                List<char> blankLetters = new List<char>();
+                var word = dictionaryWord.ToCharArray().ToList();
+                var blankLetters = new List<char>();
 
                 if (!MouldFit(mould, word) || !WordFit(mould, contactRow, letters, word, ref blankLetters) || !PerpendicularWords(grid, word, row, column, direction))
                 {
@@ -255,7 +249,7 @@ namespace WWF
                 }
 
                 //Blank tiles have 0 score. Thus when used for a letter that occurs more than once multiple words must be recored, e.g LOSSE#, LOS#ES and LO#SES
-                List<List<char>> wordBlanks = BlankVariations(mould, word, blankLetters);
+                var wordBlanks = BlankVariations(mould, word, blankLetters);
 
                 foreach (var w in wordBlanks) //Add each word to final list
                 {
@@ -271,12 +265,12 @@ namespace WWF
                 }
             }
 
-            for (int w = 0; w < words.Count; w++) //Score each word
+            for (var w = 0; w < words.Count; w++) //Score each word
             {
                 words[w] = WordScorer(words[w], grid); 
                 if (direction == "Across") //Reset coordinates of across words due to rotation
                 {
-                    int temp = words[w].Row;
+                    var temp = words[w].Row;
                     words[w].Row = 14 - words[w].Column;
                     words[w].Column = temp;
                 }
@@ -289,16 +283,16 @@ namespace WWF
         {
             var mould = new List<char>();
 
-            for (int r = row; r < 15; r++)
+            for (var r = row; r < 15; r++)
             {
                 mould.Add(grid[r][column].Letter);
             }
 
-            int blanks = mould.Count(i => i == ' ');
+            var blanks = mould.Count(i => i == ' ');
 
             if (blanks > letterCount)
             {
-                for (int r = mould.Count - 1; r > -1; r--)
+                for (var r = mould.Count - 1; r > -1; r--)
                 {
                     if (blanks == letterCount) { break; }
                     if (mould[r] == ' ')
@@ -317,7 +311,7 @@ namespace WWF
         
         static bool MouldFit(List<char> mould, List<char> word) //Quick check that letters in mould correspond with letters in word
         {
-            for (int j = 0; j < word.Count; j++)
+            for (var j = 0; j < word.Count; j++)
             {
                 if (mould[j] != ' ' && mould[j] != word[j])
                 {
@@ -329,11 +323,11 @@ namespace WWF
 
         static bool WordFit(List<char> mould, int contactRow, List<char> letters, List<char> word, ref List<char> blankLetters ) //Check word can be constructed from tiles and legally fits mould
         {
-            int count = word.Count;
-            bool connection = false;
+            var count = word.Count;
+            var connection = false;
             var tempLetters = new List<char>(letters);
 
-            for (int letter = 0; letter < word.Count; letter++) //Check each letter in word
+            for (var letter = 0; letter < word.Count; letter++) //Check each letter in word
             {
                 if (word[letter] == mould[letter]) //Check if letter is already on the board
                 {
@@ -385,27 +379,27 @@ namespace WWF
         
         static bool PerpendicularWords(List<List<Square>> grid, List<char> word, int row, int column, string direction ) //Check any perpendicular words are legal
         {
-            for (int r = 0; r < word.Count; r++) //Check perp word at each letter
+            for (var r = 0; r < word.Count; r++) //Check perp word at each letter
             {
-                string perpWord = word[r].ToString();
-                for (int c = column - 1; c > -1; c--) //Construct perp word with letters to left
+                var perpWord = word[r].ToString(CultureInfo.InvariantCulture);
+                for (var c = column - 1; c > -1; c--) //Construct perp word with letters to left
                 {
                     if (grid[r + row][c].Letter == ' ') { break; }
-                    perpWord = grid[r + row][c].Letter.ToString() + perpWord;
+                    perpWord = grid[r + row][c].Letter + perpWord;
                 }
-                for (int c = column + 1; c < 15; c++) //Add letters to right
+                for (var c = column + 1; c < 15; c++) //Add letters to right
                 {
                     if (grid[r + row][c].Letter == ' ') { break; }
-                    perpWord += grid[r + row][c].Letter.ToString();
+                    perpWord += grid[r + row][c].Letter.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (perpWord.Length == 1) { continue; } //I.E. no adjacent letters
 
-                List<string> dictionary = direction == "Down" ? new List<string>(Dictionary.Dict) : new List<string>(Dictionary.DictRev); //Rotation for across words means perp words are reversed. Use dictionary with reverse words.
-                int lowerIndex = Dictionary.Lengths[perpWord.Length - 2]; //Indices to only check dictionary words of exact length
-                int upperIndex = Dictionary.Lengths[perpWord.Length - 1];
+                var dictionary = direction == "Down" ? new List<string>(Dictionary.Dict) : new List<string>(Dictionary.DictRev); //Rotation for across words means perp words are reversed. Use dictionary with reverse words.
+                var lowerIndex = Dictionary.Lengths[perpWord.Length - 2]; //Indices to only check dictionary words of exact length
+                var upperIndex = Dictionary.Lengths[perpWord.Length - 1];
 
-                for (int w = lowerIndex; w < upperIndex + 1; w++ )
+                for (var w = lowerIndex; w < upperIndex + 1; w++ )
                 {
                     if (perpWord == dictionary[w])
                     {
@@ -431,15 +425,15 @@ namespace WWF
                 return words;
             }
 
-            int iteration = 1;
+            var iteration = 1;
 
-            for (int b = 0; b < blanks.Count; b++) //Do once or twice depending on 1 or 2 blank tiles used
+            for (var b = 0; b < blanks.Count; b++) //Do once or twice depending on 1 or 2 blank tiles used
             {
-                for (int y = 0; y < iteration; y++) 
+                for (var y = 0; y < iteration; y++) 
                 {
-                    List<char> wrd = b == 1 ? new List<char>(words[y]) : new List<char>(word);
+                    var wrd = b == 1 ? new List<char>(words[y]) : new List<char>(word);
                     
-                    for (int c = wrd.Count - 1; c > -1; c--) //Remove all letters but those of blank tile, excluding tiles that already exist, eg. aaa resulting from ALABAS###S, aa from ALAB###ERS
+                    for (var c = wrd.Count - 1; c > -1; c--) //Remove all letters but those of blank tile, excluding tiles that already exist, eg. aaa resulting from ALABAS###S, aa from ALAB###ERS
                     {
                         if (wrd[c] == blanks[b] && wrd[c] != mould[c])
                         {
@@ -448,11 +442,11 @@ namespace WWF
                         wrd.RemoveAt(c);
                     }
 
-                    for (int l = 0; l < wrd.Count; l++) //Put blank tile in place of each letter occurence, eg. aaa to *aa, then aaa to a*a etc. (done at 2nd comment down)
+                    for (var l = 0; l < wrd.Count; l++) //Put blank tile in place of each letter occurence, eg. aaa to *aa, then aaa to a*a etc. (done at 2nd comment down)
                     {
-                        List<char> wd = b == 1 ? new List<char>(words[y]) : new List<char>(word);
+                        var wd = b == 1 ? new List<char>(words[y]) : new List<char>(word);
 
-                        for (int c = 0; c < wd.Count; c++) //Word without mould letters, eg. ALABAS###S
+                        for (var c = 0; c < wd.Count; c++) //Word without mould letters, eg. ALABAS###S
                         {
                             wd[c] = word[c] == mould[c] ? ' ' : wd[c];
                         }
@@ -461,19 +455,19 @@ namespace WWF
                         lts[l] = ' '; //Replace tile instance with ' '
                         var indices = new List<int>();
 
-                        for (int ind = 0; ind < lts.Count; ind++) //Find indices of duplicate tiles to place back in, eg. [0,2,4] for As in ALABASTERS
+                        for (var ind = 0; ind < lts.Count; ind++) //Find indices of duplicate tiles to place back in, eg. [0,2,4] for As in ALABASTERS
                         {
-                            int index = wd.FindIndex(x => x == blanks[b]);
+                            var index = wd.FindIndex(x => x == blanks[b]);
                             indices.Add(index);
                             wd[index] = ' ';
                         }
 
-                        for (int i = 0; i < lts.Count; i++) //Reinsert current duplicate scheme, eg. *LABAS###S, AL*BAS###S, ALAB*S###S
+                        for (var i = 0; i < lts.Count; i++) //Reinsert current duplicate scheme, eg. *LABAS###S, AL*BAS###S, ALAB*S###S
                         {
                             wd[indices[i]] = lts[i];
                         }
 
-                        for (int i = 0; i < word.Count; i++) //Reinsert mould letters, eg. *LABASTERS, AL*BASTERS, ALAB*STERS. End up with three variations of ALABASTERS with ' ' at different occurences of 'A'
+                        for (var i = 0; i < word.Count; i++) //Reinsert mould letters, eg. *LABASTERS, AL*BASTERS, ALAB*STERS. End up with three variations of ALABASTERS with ' ' at different occurences of 'A'
                         {
                             if (mould[i] != ' ')
                             {
@@ -488,7 +482,7 @@ namespace WWF
                 iteration = words.Count; //Needed when there are two blank tiles utilised
             }
             
-            for (int w = words.Count - 1; w > -1; w--) //Remove duplicate words
+            for (var w = words.Count - 1; w > -1; w--) //Remove duplicate words
             {
                 if (words[w].Count(x => x == ' ') < blanks.Count) 
                 {
@@ -496,7 +490,7 @@ namespace WWF
                     continue;
                 }
 
-                for (int x = w - 1; x > -1; x--)
+                for (var x = w - 1; x > -1; x--)
                 {
                     if (string.Concat(words[x]) == string.Concat(words[w]))
                     {
@@ -511,11 +505,11 @@ namespace WWF
         
         static List<int> LetterFreq(List<char> letters, List<int> letterFrequency, int length) //Returns list of letter frequencies [char, count, max allowed, char, count, max allowed, etc.]
         {
-            for (int letter = 0; letter < letters.Count; letter += 1)
+            for (var letter = 0; letter < letters.Count; letter += 1)
             {
                 if ((Convert.ToInt32(letters[letter]) < 97 || Convert.ToInt32(letters[letter]) > 122) && Convert.ToInt32(letters[letter]) != 32){ continue; }
-                int duplicate = 0;
-                int count = 0;
+                var duplicate = 0;
+                var count = 0;
                 while (count < letterFrequency.Count)
                 {
                     if (letterFrequency[count] == Convert.ToInt32(letters[letter]))
@@ -538,9 +532,9 @@ namespace WWF
                 }
             }
 
-            for (int k = letterFrequency.Count - 3; k > -1; k -= 3)
+            for (var k = letterFrequency.Count - 3; k > -1; k -= 3)
             {
-                int max = 0;
+                int max;
                 switch (letterFrequency[k]) //Number of each tiles allowed
                 {
                     case 106: case 107: case 113: case 120: case 122:
@@ -584,9 +578,9 @@ namespace WWF
 
         static bool LettersCheck(List<char> charLetters, List<int> letterFrequency, int length) //Used for both rack tiles(7) and board row tiles(15). Provides every applicable error message.
         {
-            bool pass = true;
+            var pass = true;
 
-            foreach (char c in charLetters)
+            foreach (var c in charLetters)
             {
                 if ((c < 32 || 32 < c) && (c < 65 || 90 < c) && (c < 97 || c > 122))
                 {
@@ -609,7 +603,7 @@ namespace WWF
                 pass = false;
             }
 
-            for (int j = 0; j < letterFrequency.Count; j += 3)
+            for (var j = 0; j < letterFrequency.Count; j += 3)
             {
                 if (letterFrequency[j] < 33 && letterFrequency[j + 1] > letterFrequency[j + 2] && length == 7)
                 {
@@ -638,9 +632,9 @@ namespace WWF
 
         public static List<int> LetterValues(List<char> word)
         {
-            List<int> letterScores = new List<int>();
+            var letterScores = new List<int>();
 
-            foreach (char i in word)
+            foreach (var i in word)
             {
                 switch (i)
                 {
@@ -667,15 +661,15 @@ namespace WWF
 
         static Word WordScorer(Word word, List<List<Square>> grid)
         {
-            int totalScore = 0;
-            int totalWordMultiplier = 1; //Total word multiplier for base word score
-            int baseScore = 0; //Basic score of actual word before final word multiplication
-            int letterCount = 0; //Check if all letters are used for 35 bonus
+            var totalScore = 0;
+            var totalWordMultiplier = 1; //Total word multiplier for base word score
+            var baseScore = 0; //Basic score of actual word before final word multiplication
+            var letterCount = 0; //Check if all letters are used for 35 bonus
 
-            for (int r = 0; r < word.Letters.Count; r++)
+            for (var r = 0; r < word.Letters.Count; r++)
             {
-                int letterMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].LetterBonus : 1; //Determine if square letter muliplier is applicable
-                int wordMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].WordBonus : 1; //Determine if square word multiplier is applicable
+                var letterMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].LetterBonus : 1; //Determine if square letter muliplier is applicable
+                var wordMultiplier = grid[r + word.Row][word.Column].Letter == ' ' ? grid[r + word.Row][word.Column].WordBonus : 1; //Determine if square word multiplier is applicable
 
                 totalWordMultiplier *= wordMultiplier; //Add square word multiplier to total word multiplier
 
@@ -685,16 +679,16 @@ namespace WWF
 
                 letterCount++;
 
-                int crossWord = word.Scores[r] * letterMultiplier; //Letter value times letter bonus
+                var crossWord = word.Scores[r] * letterMultiplier; //Letter value times letter bonus
 
-                int count = 0; //Count of perpendicular tiles. Needed due to potential blank tiles with 0 score.
-                for (int c = word.Column - 1; c > -1; c--) //Add letter scores for perp word to left
+                var count = 0; //Count of perpendicular tiles. Needed due to potential blank tiles with 0 score.
+                for (var c = word.Column - 1; c > -1; c--) //Add letter scores for perp word to left
                 {
                     if (grid[r + word.Row][c].Letter == ' ') { break; }
                     crossWord += grid[r + word.Row][c].Score;
                     count++;
                 }
-                for (int c = word.Column + 1; c < 15; c++) //Add letter scores for perp word to right
+                for (var c = word.Column + 1; c < 15; c++) //Add letter scores for perp word to right
                 {
                     if (grid[r + word.Row][c].Letter == ' ') { break; }
                     crossWord += grid[r + word.Row][c].Score;
@@ -716,21 +710,21 @@ namespace WWF
     class Board
     {
         public List<List<Square>> BoardEmpty = new List<List<Square>>{
-               new List<Square>{new Square(), new Square(), new Square(), new Square(){WordBonus = 3}, new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(){WordBonus = 3}, new Square(), new Square(), new Square()},
-               new List<Square>{new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square()},
-               new List<Square>{new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square()},
-               new List<Square>{new Square(){WordBonus = 3}, new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(){WordBonus = 3}},
-               new List<Square>{new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square()},
-               new List<Square>{new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square()},
-               new List<Square>{new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}},
-               new List<Square>{new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square()},
-               new List<Square>{new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}},
-               new List<Square>{new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square()},
-               new List<Square>{new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square()},
-               new List<Square>{new Square(){WordBonus = 3}, new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(){WordBonus = 3}},
-               new List<Square>{new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square()},
-               new List<Square>{new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(), new Square(){WordBonus = 2}, new Square(), new Square(), new Square(){LetterBonus = 2}, new Square(), new Square()},
-               new List<Square>{new Square(), new Square(), new Square(), new Square(){WordBonus = 3}, new Square(), new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(){LetterBonus = 3}, new Square(), new Square(), new Square(){WordBonus = 3}, new Square(), new Square(), new Square()},
+               new List<Square>{new Square(), new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square()},
+               new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
+               new List<Square>{new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square()},
+               new List<Square>{new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}},
+               new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
+               new List<Square>{new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square()},
+               new List<Square>{new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}},
+               new List<Square>{new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square()},
+               new List<Square>{new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}},
+               new List<Square>{new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square()},
+               new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
+               new List<Square>{new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}},
+               new List<Square>{new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square(), new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square()},
+               new List<Square>{new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square(), new Square {WordBonus = 2}, new Square(), new Square(), new Square {LetterBonus = 2}, new Square(), new Square()},
+               new List<Square>{new Square(), new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square {LetterBonus = 3}, new Square(), new Square {LetterBonus = 3}, new Square(), new Square(), new Square {WordBonus = 3}, new Square(), new Square(), new Square()},
             };
 
         public class Fill : Board
@@ -741,7 +735,7 @@ namespace WWF
             {
                 BoardFilled = BoardEmpty;
 
-                List<string> letters = new List<string>
+                var letters = new List<string>
                 {
                    //012345678901234
                     "               ", //0
@@ -762,15 +756,15 @@ namespace WWF
                    //012345678901234
                 };
 
-                for (int i = 0; i < 15; i++)
+                for (var i = 0; i < 15; i++)
                 {
-                    List<char> chrs = letters[i].ToCharArray().ToList();
-                    for (int j = 0; j < 15; j++)
+                    var chrs = letters[i].ToCharArray().ToList();
+                    for (var j = 0; j < 15; j++)
                     {
                         BoardFilled[i][j].Row = i;
                         BoardFilled[i][j].Column = j;
                         BoardFilled[i][j].Letter = chrs[j];
-                        BoardFilled[i][j].Score = Program.LetterValues(BoardFilled[i][j].Letter.ToString().ToCharArray().ToList())[0]; //TODO: !!
+                        BoardFilled[i][j].Score = Program.LetterValues(BoardFilled[i][j].Letter.ToString(CultureInfo.InvariantCulture).ToCharArray().ToList())[0]; //TODO: !!
                         BoardFilled[i][j].LetterBonus = BoardFilled[i][j].LetterBonus == 0 ? 1 : BoardFilled[i][j].LetterBonus;
                         BoardFilled[i][j].WordBonus = BoardFilled[i][j].WordBonus == 0 ? 1 : BoardFilled[i][j].WordBonus;
                     }
