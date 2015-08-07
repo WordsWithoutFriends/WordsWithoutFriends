@@ -24,11 +24,11 @@ namespace WWF
 
             var words = new List<Word>();
 
-            words.AddRange(SquareRunThrough(board, letters, "Down")); //Down words
+            words.AddRange(SquareRunThrough(board, letters, Direction.Down)); //Down words
 
             board = Rotate(board);
 
-            words.AddRange(SquareRunThrough(board, letters, "Across")); //Across words
+            words.AddRange(SquareRunThrough(board, letters, Direction.Across)); //Across words
             
             var endTime = DateTime.Now;
 
@@ -131,7 +131,7 @@ namespace WWF
             return (letters);
         }
         
-        static List<Word> SquareRunThrough(List<List<Square>> board, List<char> letters, string direction )
+        static List<Word> SquareRunThrough(List<List<Square>> board, List<char> letters, Direction direction)
         {
             var words = new List<Word>();
 
@@ -228,7 +228,7 @@ namespace WWF
             return rotatedGrid;
         }
 
-        static List<Word> WordSolver(List<List<Square>> grid, List<char> letters, int row, int column, int contactRow, string direction)
+        static List<Word> WordSolver(List<List<Square>> grid, List<char> letters, int row, int column, int contactRow, Direction direction)
         {
             var mould = Mould(grid, letters.Count, row, column); //Find 'mould' (line of empty and filled squares down or across) for current square, eg. "  C D"
 
@@ -270,7 +270,7 @@ namespace WWF
             for (var w = 0; w < words.Count; w++) //Score each word
             {
                 words[w] = WordScorer(words[w], grid); 
-                if (direction == "Across") //Reset coordinates of across words due to rotation
+                if (direction == Direction.Across) //Reset coordinates of across words due to rotation
                 {
                     var temp = words[w].Row;
                     words[w].Row = BoardSize - 1 - words[w].Column;
@@ -379,7 +379,7 @@ namespace WWF
             return false;
         }
         
-        static bool PerpendicularWords(List<List<Square>> grid, List<char> word, int row, int column, string direction ) //Check any perpendicular words are legal
+        static bool PerpendicularWords(List<List<Square>> grid, List<char> word, int row, int column, Direction direction) //Check any perpendicular words are legal
         {
             for (var r = 0; r < word.Count; r++) //Check perp word at each letter
             {
@@ -397,7 +397,7 @@ namespace WWF
 
                 if (perpWord.Length == 1) { continue; } //I.E. no adjacent letters
 
-                var dictionary = direction == "Down" ? new List<string>(Dictionary.Dict) : new List<string>(Dictionary.DictRev); //Rotation for across words means perp words are reversed. Use dictionary with reverse words.
+                var dictionary = direction == Direction.Down ? new List<string>(Dictionary.Dict) : new List<string>(Dictionary.DictRev); //Rotation for across words means perp words are reversed. Use dictionary with reverse words.
                 var lowerIndex = Dictionary.Lengths[perpWord.Length - 2]; //Indices to only check dictionary words of exact length
                 var upperIndex = Dictionary.Lengths[perpWord.Length - 1];
 
@@ -796,7 +796,7 @@ namespace WWF
 
         public int Column { get; set; }
 
-        public string Direction { get; set; }
+        public Direction Direction { get; set; }
 
         public List<char> Letters { get; set; }
 
